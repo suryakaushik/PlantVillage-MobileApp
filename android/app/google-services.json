@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "362930759792",
+    "project_id": "plantdoctor-60282",
+    "storage_bucket": "plantdoctor-60282.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362930759792:android:25656877f186a81735ecb5",
+        "android_client_info": {
+          "package_name": "com.plantvillage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362930759792-pjididv28ero4cost4ddtbssed6en3mg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAp0TNCuNcVh48vqT5EpKmJObTwfyHj-aY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362930759792-pjididv28ero4cost4ddtbssed6en3mg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
