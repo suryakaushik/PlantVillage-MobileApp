@@ -17,7 +17,7 @@ const INITIAL_STATE = {
   },
   regError: false,
   regLoading: false,
-  language: '',
+  language: 'EN',
 };
 
 const AuthReducer = (state = INITIAL_STATE, action) => {
@@ -42,7 +42,7 @@ const AuthReducer = (state = INITIAL_STATE, action) => {
       console.log("fromReducer->INIT", action);
       return {
         ...state,
-        loginObj: {},
+        loginObj: action.payload,
         loginError: false,
         loginLoading: true,
       };
@@ -63,11 +63,30 @@ const AuthReducer = (state = INITIAL_STATE, action) => {
       console.log("fromReducer->FAILURE", action);
       return {
         ...state,
-        loginObj: action.payload,
+        // loginObj: action.payload,
         loginError: true,
         loginLoading: false,
 
         isLoggedIn: false,
+      };
+    }
+    case 'LOGOUT': {
+      console.log("fromReducer->INIT", action);
+      return {
+        ...state
+      };
+    }
+    case 'LOGOUT_SUCCESS': {
+      console.log("fromReducer->SUCCESS", action);
+      return {
+        ...state,
+        isLoggedIn: false,
+      };
+    }
+    case 'LOGOUT_FAILURE': {
+      console.log("fromReducer->FAILURE", action);
+      return {
+        ...state
       };
     }
     case 'REGISTER': {
@@ -91,7 +110,7 @@ const AuthReducer = (state = INITIAL_STATE, action) => {
     case 'REGISTER_FAILURE': {
       return {
         ...state,
-        regObj: action.payload,
+        // regObj: action.payload,
         regError: true,
         regLoading: false,
 

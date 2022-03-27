@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import {
     Button,
     View,
@@ -7,14 +7,12 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     TextInput,
     Image,
     StatusBar,
     Modal,
     Alert,
     Platform,
-    Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CheckBox from '@react-native-community/checkbox';
@@ -22,14 +20,24 @@ import CheckBox from '@react-native-community/checkbox';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { login, setLanguage } from './actions';
+import {
+    login,
+    loginSuccess,
+    loginFailure,
+    setLanguage,
+    setLanguageSuccess,
+    setLanguageFailure,
+} from './actions';
 import auth from '@react-native-firebase/auth';
 
 import { Picker } from '@react-native-picker/picker';
 
 function LoginScreen(props) {
     const [initializing, setInitializing] = useState(true);
-    const [user, setUser] = useState({});
+    const [user, setUser] = useState({
+        userId: '',
+        password: '',
+    });
 
     const [selectedLanguage, setSelectedLanguage] = useState('EN');
     const [isCheckboxSelected, setCheckboxSelected] = useState(false);
@@ -46,29 +54,30 @@ function LoginScreen(props) {
     const onAuthStateChanged = user => {
         setUser(user);
         console.log('kaus onAuthStateChanged', user);
+
+        // TODO: write async-storage logic-->Stay SignedIN
+        if (isCheckboxSelected) {
+        }
+
         if (initializing) setInitializing(false);
+        if (user) {
+            props.navigation.navigate('MainTab');
+        }
     };
 
     const onLogin = () => {
-        props.login(user);
+        props.login({ ...user, role: 'user' });
         auth()
             .signInWithEmailAndPassword(userID, password)
             .then(() => {
-                props.dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    context: 'LoginScreen',
-                    payload: {
-                        userId: userID,
-                        password: password,
-                    },
+                props.loginSuccess({
+                    userId: userID,
+                    password: password,
+                    role: 'user',
                 });
             })
             .catch(error => {
-                props.dispatch({
-                    type: 'LOGIN_FAILURE',
-                    context: 'LoginScreen',
-                    payload: error,
-                });
+                props.loginFailure(error);
                 if (error.code === 'auth/email-already-in-use') {
                     console.log('That email address is already in use!');
                 }
@@ -82,6 +91,35 @@ function LoginScreen(props) {
             });
     };
 
+    const onAnonymousLogin = () => {
+        props.login({ ...user, role: 'guest' });
+        auth()
+            .signInAnonymously()
+            .then(() => {
+                console.log('User signed in anonymously');
+                props.loginSuccess({ ...user, role: 'guest' });
+                props.navigation.navigate('MainTab', {
+                    screen: 'PredictionScreen',
+                });
+            })
+            .catch(error => {
+                props.loginFailure(error);
+                if (error.code === 'auth/operation-not-allowed') {
+                    console.log('Enable anonymous in your firebase console.');
+                }
+                console.error(error);
+            });
+    };
+
+    const onLanguageChange = (itemValue, itemIndex) => {
+        setSelectedLanguage(itemValue);
+        props.setLanguageSuccess(itemValue);
+    };
+
+    useLayoutEffect(() => {
+        // TODO: if login details are in async storage-->Set the default login details
+    }, []);
+
     useEffect(() => {
         const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
         return subscriber; // unsubscribe on unmount
@@ -89,32 +127,23 @@ function LoginScreen(props) {
 
     if (initializing) return null;
 
-    if (user) {
-        props.navigation.navigate('MainTab');
-        return null;
-    }
-
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar
-                backgroundColor={'#8cd9d1'}
-                barStyle={'light-content'}
-                translucent={false}
-            />
             <KeyboardAwareScrollView
                 contentContainerStyle={{ flex: 1, width: '100%' }}
                 style={{ width: '100%' }}>
-                <Picker
-                    style={styles.pickerStyle}
-                    selectedValue={selectedLanguage}
-                    onValueChange={(itemValue, itemIndex) =>
-                        setSelectedLanguage(itemValue)
-                    }
-                    mode={'dialog'}>
-                    <Picker.Item label="ENGLISH" value="EN" />
-                    <Picker.Item label="TELUGU" value="TE" />
-                    <Picker.Item label="HINDI" value="IN" />
-                </Picker>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Picker
+                        style={styles.pickerStyle}
+                        selectedValue={selectedLanguage}
+                        onValueChange={onLanguageChange}
+                        mode={'dialog'}>
+                        <Picker.Item label="ENGLISH" value="EN" />
+                        <Picker.Item label="TELUGU" value="TE" />
+                        <Picker.Item label="HINDI" value="IN" />
+                    </Picker>
+                    <Button title="Login as a Guest" onPress={onAnonymousLogin} />
+                </View>
                 <View style={styles.contentCont}>
                     <Text style={{ textAlign: 'center' }}>
                         {user ? `Welcome back, ${user}` : 'Welcome'}
@@ -170,29 +199,12 @@ function LoginScreen(props) {
                     </View>
                     <Text
                         style={{ alignSelf: 'flex-end', color: 'red', marginVertical: 5 }}
-                        onPress={() => { setShowEmailVerifyModal(true); }}
-                    >
+                        onPress={() => {
+                            setShowEmailVerifyModal(true);
+                        }}>
                         {'Forgot your Password?'}
                     </Text>
                 </View>
-                {/* <Button
-                title="Login as a Guest"
-                onPress={() => {
-                    auth()
-                        .signInAnonymously()
-                        .then(() => {
-                            console.log('User signed in anonymously');
-                        })
-                        .catch(error => {
-                            if (error.code === 'auth/operation-not-allowed') {
-                                console.log('Enable anonymous in your firebase console.');
-                            }
-
-                            console.error(error);
-                        });
-                    props.navigation.navigate('MainTab')
-                }}
-            /> */}
             </KeyboardAwareScrollView>
             <Modal
                 //  animationType="slide"
@@ -392,9 +404,25 @@ const mapDispatchToProps = dispatch => ({
         console.log('dispatching now');
         dispatch(login(payload));
     },
+    loginSuccess: payload => {
+        console.log('dispatching now');
+        dispatch(loginSuccess(payload));
+    },
+    loginFailure: payload => {
+        console.log('dispatching now');
+        dispatch(loginFailure(payload));
+    },
     setLanguage: payload => {
         console.log('dispatching now');
         dispatch(setLanguage(payload));
+    },
+    setLanguageSuccess: payload => {
+        console.log('dispatching now');
+        dispatch(setLanguageSuccess(payload));
+    },
+    setLanguageFailure: payload => {
+        console.log('dispatching now');
+        dispatch(setLanguageFailure(payload));
     },
 });
 

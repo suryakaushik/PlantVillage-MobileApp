@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -13,10 +13,13 @@ import {
   Linking,
 } from 'react-native';
 
+import Header, { headerHeight } from '../../components/Header';
+
+import { useTheme } from '@react-navigation/native';
+
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {fetchPredictions, getPredictions} from './actions';
+import { connect } from 'react-redux';
+import { fetchPredictions, getPredictions } from './actions';
 
 // import AsyncStorage from '@react-native-community/async-storage';
 
@@ -27,6 +30,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 var RNFS = require('react-native-fs');
 
 const PredictionScreen = props => {
+  const { colors } = useTheme();
+
   const [img, setImg] = useState('');
   const [output, setOutput] = useState({});
   const [showUploadOptions, setShowUploadOptions] = useState(false);
@@ -49,7 +54,6 @@ const PredictionScreen = props => {
     //   }
     //   console.log('user token: ', userToken);
     // const payload = {};
-    // props.fetchPredictions(payload);
   }, []);
 
   const showCamera = () => {
@@ -93,77 +97,109 @@ const PredictionScreen = props => {
 
   return (
     <>
-      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-        {docSource !== '' && (
-          <Image
-            source={{uri: `data:image/jpg;base64,${docSource}`}}
-            style={{width: 300, height: 400}}
-          />
-        )}
-        <TouchableOpacity
-          onPress={() => {
-            setShowUploadOptions(true);
-          }}
+      <Header />
+      <ScrollView
+        contentContainerStyle={{
+          marginTop: headerHeight,
+        }}
+        style={{
+          flex: 1,
+          height: '100%',
+        }}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}>
+        <View
           style={{
-            width: 100,
-            height: 100,
-            backgroundColor: 'red',
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
+            margin: 20,
           }}>
-          <Text>{'Upload'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('kk11', img, docSource);
-            props.getPredictions({docSource});
-          }}
-          style={{
-            marginTop: 20,
-            width: 100,
-            height: 100,
-            backgroundColor: 'green',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text>{'Predict'}</Text>
-        </TouchableOpacity>
-        {output && (
-          <>
-            <Text>{'Disease is: '}</Text>
-            <Text>{JSON.stringify(output)}</Text>
-          </>
-        )}
-      </View>
-
-      <Modal
-        isVisible={showUploadOptions}
-        style={{margin: 0, padding: 0, justifyContent: 'flex-end'}}>
-        <View style={{width: '100%'}}>
-          <Text
-            style={styles.modalOptionsText}
-            onPress={() => {
-              showCamera();
+          {docSource !== '' && (
+            <Image
+              source={{ uri: `data:image/jpg;base64,${docSource}` }}
+              style={{ width: 300, height: 400 }}
+            />
+          )}
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+              width: '100%',
             }}>
-            {'Camera'}
-          </Text>
-          <View style={styles.divider} />
-          <Text
-            style={[styles.modalOptionsText, {marginBottom: 5}]}
-            onPress={() => {
-              showPicker();
-            }}>
-            {'Library'}
-          </Text>
-          <Text
-            style={styles.modalOptionsText}
-            onPress={() => {
-              setShowUploadOptions(false);
-            }}>
-            {'Cancel'}
-          </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setShowUploadOptions(true);
+              }}
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                margin: 5,
+                borderRadius: 20,
+                backgroundColor: 'red',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{ color: colors.text }}>{'Upload'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                console.log('kk11', img, docSource);
+                props.getPredictions({ docSource });
+              }}
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                margin: 5,
+                borderRadius: 20,
+                backgroundColor: 'green',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{ color: colors.text }}>{'Predict'}</Text>
+            </TouchableOpacity>
+          </View>
+          {output && (
+            <View style={{ flex: 1, flexDirection: 'row', marginTop: 20 }}>
+              <Text style={{ color: colors.text }}>
+                {'Predicted Disease is: '}
+              </Text>
+              <Text style={{ color: colors.text }}>{JSON.stringify(output)}</Text>
+            </View>
+          )}
         </View>
-      </Modal>
+
+        <Modal
+          isVisible={showUploadOptions}
+          style={{ margin: 0, padding: 0, justifyContent: 'flex-end' }}>
+          <View style={{ width: '100%' }}>
+            <Text
+              style={styles.modalOptionsText}
+              onPress={() => {
+                showCamera();
+              }}>
+              {'Camera'}
+            </Text>
+            <View style={styles.divider} />
+            <Text
+              style={[styles.modalOptionsText, { marginBottom: 5 }]}
+              onPress={() => {
+                showPicker();
+              }}>
+              {'Library'}
+            </Text>
+            <Text
+              style={styles.modalOptionsText}
+              onPress={() => {
+                setShowUploadOptions(false);
+              }}>
+              {'Cancel'}
+            </Text>
+          </View>
+        </Modal>
+      </ScrollView>
     </>
   );
 };

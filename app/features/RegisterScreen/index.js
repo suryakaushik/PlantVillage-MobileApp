@@ -1,10 +1,11 @@
-import React, {useState, useEffect} from 'react';
-import {Button, View, Text, TextInput, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Button, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {register,setLanguage} from "./actions";
+import { register, setLanguage } from './actions';
 import auth from '@react-native-firebase/auth';
 
 function RegisterScreen(props) {
@@ -18,11 +19,13 @@ function RegisterScreen(props) {
   });
 
   return (
-    <View
-      style={{
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+      }}
+      style={{
         paddingHorizontal: 40,
       }}>
       <View
@@ -31,7 +34,7 @@ function RegisterScreen(props) {
           alignSelf: 'flex-end',
           width: '100%',
         }}>
-        <Text style={{color: '#000'}}>First Name/Given Name</Text>
+        <Text style={{ color: '#000' }}>First Name/Given Name</Text>
         <TextInput
           placeholder={'Please Enter First Name'}
           style={{
@@ -40,10 +43,10 @@ function RegisterScreen(props) {
             borderBottomColor: '#000',
             borderBottomWidth: 1,
           }}
-          onChangeText={txt => setUser({...user, firstName: txt})}
+          onChangeText={txt => setUser({ ...user, firstName: txt })}
           defaultValue={user.firstName}
         />
-        <Text style={{color: '#000', marginTop: 10}}>
+        <Text style={{ color: '#000', marginTop: 10 }}>
           Last Name/Family Name
         </Text>
         <TextInput
@@ -54,9 +57,9 @@ function RegisterScreen(props) {
             borderBottomColor: '#000',
             borderBottomWidth: 1,
           }}
-          onChangeText={txt => setUser({...user, lastName: txt})}
+          onChangeText={txt => setUser({ ...user, lastName: txt })}
         />
-        <Text style={{color: '#000', marginTop: 10}}>User Id</Text>
+        <Text style={{ color: '#000', marginTop: 10 }}>User Id</Text>
         <TextInput
           placeholder={'Please Enter Username/email'}
           style={{
@@ -65,9 +68,9 @@ function RegisterScreen(props) {
             borderBottomColor: '#000',
             borderBottomWidth: 1,
           }}
-          onChangeText={txt => setUser({...user, userId: txt})}
+          onChangeText={txt => setUser({ ...user, userId: txt })}
         />
-        <Text style={{color: '#000', marginTop: 10}}>Password</Text>
+        <Text style={{ color: '#000', marginTop: 10 }}>Password</Text>
         <TextInput
           placeholder={'Please Enter Password'}
           style={{
@@ -76,7 +79,7 @@ function RegisterScreen(props) {
             borderBottomColor: '#000',
             borderBottomWidth: 1,
           }}
-          onChangeText={txt => setUser({...user, password: txt})}
+          onChangeText={txt => setUser({ ...user, password: txt })}
         />
       </View>
       <View
@@ -86,7 +89,7 @@ function RegisterScreen(props) {
           justifyContent: 'space-between',
         }}>
         <View>
-          <Text style={{color: '#000', marginTop: 10, flexWrap: 'wrap'}}>
+          <Text style={{ color: '#000', marginTop: 10, flexWrap: 'wrap' }}>
             Country
           </Text>
           <TextInput
@@ -98,11 +101,11 @@ function RegisterScreen(props) {
               borderBottomWidth: 1,
               flexWrap: 'wrap',
             }}
-            onChangeText={txt => setUser({...user, country: txt})}
+            onChangeText={txt => setUser({ ...user, country: txt })}
           />
         </View>
         <View>
-          <Text style={{color: '#000', marginTop: 10, flexWrap: 'wrap'}}>
+          <Text style={{ color: '#000', marginTop: 10, flexWrap: 'wrap' }}>
             Language
           </Text>
           <TextInput
@@ -114,7 +117,7 @@ function RegisterScreen(props) {
               borderBottomWidth: 1,
               flexWrap: 'wrap',
             }}
-            onChangeText={txt => setUser({...user, language: txt})}
+            onChangeText={txt => setUser({ ...user, language: txt })}
           />
         </View>
       </View>
@@ -146,7 +149,7 @@ function RegisterScreen(props) {
                 console.log('That email address is invalid!');
               }
 
-            //   console.error(error);
+              //   console.error(error);
             });
         }}
         style={{
@@ -158,11 +161,11 @@ function RegisterScreen(props) {
         <Text>{'Sign Up'}</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={{margin: 10, textAlign: 'left'}}
+        style={{ margin: 10, textAlign: 'left' }}
         onPress={() => props.navigation.navigate('Login')}>
-        <Text style={{color: 'red'}}>{'Existing User! Sign In'}</Text>
+        <Text style={{ color: 'red' }}>{'Existing User! Sign In'}</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -178,7 +181,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   dispatch,
   register,
-  setLanguage
+  setLanguage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);

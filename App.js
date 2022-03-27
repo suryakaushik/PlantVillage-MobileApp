@@ -6,7 +6,13 @@
  * @flow strict-local
  */
 
-import React, {useEffect, useState, useContext, createContext} from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useContext,
+  createContext,
+} from 'react';
 import {
   View,
   Button,
@@ -19,7 +25,6 @@ import {
 
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware, compose} from 'redux';
-// import { composeWithDevTools } from 'redux-devtools-extension'
 
 // import {persistStore, persistReducer} from 'redux-persist';
 // import storage from 'redux-persist/lib/storage';
@@ -80,14 +85,12 @@ function MainTab() {
 export const ThemeContext = createContext();
 
 function App() {
-  const {isLoggedIn, setIsLoggedIn} = useState(false);
   const {role, setRole} = useState('Guest'); //Guest,User/Farmer,Service Provider
 
   const defTheme = useColorScheme();
   const [theme, setTheme] = useState(defTheme);
   const themeData = {theme, setTheme};
-  useEffect(() => {
-    // setTheme(defTheme);
+  useLayoutEffect(() => {
     SplashScreen.hide();
   }, []);
 
@@ -105,7 +108,7 @@ function App() {
       // PredictionScreen: 'predict',
     },
   };
-
+  
   return (
     <ThemeContext.Provider value={themeData}>
       <Provider store={store}>
@@ -117,12 +120,18 @@ function App() {
           theme={
             theme === 'dark' ? NavigationDarkTheme : NavigationDefaultTheme
           }>
-          <StatusBar
-            backgroundColor={'#8cd9d1'}
-            barStyle={'dark-content'}
-            translucent={false}
-          />
-          <Stack.Navigator initialRouteName={isLoggedIn ? 'MainTab' : 'Login'}>
+          <View
+            style={{
+              height: StatusBar.currentHeight,
+              backgroundColor: '#8cd9d1',
+            }}>
+            <StatusBar
+              backgroundColor={'#8cd9d1'}
+              barStyle={theme === 'light' ? 'dark-content' : 'light-content'}
+              translucent={false}
+            />
+          </View>
+          <Stack.Navigator initialRouteName={'Login'}>
             <Stack.Group screenOptions={{headerShown: false}}>
               <Stack.Screen name="Login" component={LoginScreen} />
               <Stack.Screen name="Register" component={RegisterScreen} />
@@ -146,65 +155,8 @@ export default () => {
   return <App />;
 };
 
-// import MainTabScreen from './screens/MainTabScreen';
-// import SupportScreen from './screens/SupportScreen';
-// import SettingsScreen from './screens/SettingsScreen';
-// import BookmarkScreen from './screens/BookmarkScreen';
-
-// import { AuthContext } from './components/context';
-
-// import RootStackScreen from './screens/RootStackScreen';
-
 // import AsyncStorage from '@react-native-community/async-storage';
-
-// const Drawer = createDrawerNavigator();
-
 // const App = () => {
-//   // const [isLoading, setIsLoading] = React.useState(true);
-//   // const [userToken, setUserToken] = React.useState(null);
-
-//   const initialLoginState = {
-//     isLoading: true,
-//     userName: null,
-//     userToken: null,
-//   };
-
-//   const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
-
-//   const loginReducer = (prevState, action) => {
-//     switch( action.type ) {
-//       case 'RETRIEVE_TOKEN':
-//         return {
-//           ...prevState,
-//           userToken: action.token,
-//           isLoading: false,
-//         };
-//       case 'LOGIN':
-//         return {
-//           ...prevState,
-//           userName: action.id,
-//           userToken: action.token,
-//           isLoading: false,
-//         };
-//       case 'LOGOUT':
-//         return {
-//           ...prevState,
-//           userName: null,
-//           userToken: null,
-//           isLoading: false,
-//         };
-//       case 'REGISTER':
-//         return {
-//           ...prevState,
-//           userName: action.id,
-//           userToken: action.token,
-//           isLoading: false,
-//         };
-//     }
-//   };
-
-//   const [loginState, dispatch] = React.useReducer(loginReducer, initialLoginState);
-
 //   const authContext = React.useMemo(() => ({
 //     signIn: async(foundUser) => {
 //       // setUserToken('fgkj');
@@ -230,13 +182,6 @@ export default () => {
 //       }
 //       dispatch({ type: 'LOGOUT' });
 //     },
-//     signUp: () => {
-//       // setUserToken('fgkj');
-//       // setIsLoading(false);
-//     },
-//     toggleTheme: () => {
-//       setIsDarkTheme( isDarkTheme => !isDarkTheme );
-//     }
 //   }), []);
 
 //   useEffect(() => {
@@ -253,33 +198,4 @@ export default () => {
 //       dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
 //     }, 1000);
 //   }, []);
-
-//   if( loginState.isLoading ) {
-//     return(
-//       <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-//         <ActivityIndicator size="large"/>
-//       </View>
-//     );
-//   }
-//   return (
-//     <PaperProvider theme={theme}>
-//     <AuthContext.Provider value={authContext}>
-//     <NavigationContainer theme={theme}>
-//       { loginState.userToken !== null ? (
-//         <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
-//           <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
-//           <Drawer.Screen name="SupportScreen" component={SupportScreen} />
-//           <Drawer.Screen name="SettingsScreen" component={SettingsScreen} />
-//           <Drawer.Screen name="BookmarkScreen" component={BookmarkScreen} />
-//         </Drawer.Navigator>
-//       )
-//     :
-//       <RootStackScreen/>
-//     }
-//     </NavigationContainer>
-//     </AuthContext.Provider>
-//     </PaperProvider>
-//   );
 // }
-
-// export default App;
