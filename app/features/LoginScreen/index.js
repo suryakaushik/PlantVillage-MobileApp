@@ -1,42 +1,74 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, View, SafeAreaView, Text, TouchableOpacity, TextInput, Image, StatusBar, Modal, Alert } from 'react-native';
+import {
+    Button,
+    View,
+    ScrollView,
+    StyleSheet,
+    SafeAreaView,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    TextInput,
+    Image,
+    StatusBar,
+    Modal,
+    Alert,
+    Platform,
+    Keyboard,
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CheckBox from '@react-native-community/checkbox';
+
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import { login, setLanguage } from './actions';
 import auth from '@react-native-firebase/auth';
 
 import { Picker } from '@react-native-picker/picker';
 
-function LoginScreen({ navigation }) {
+function LoginScreen(props) {
     const [initializing, setInitializing] = useState(true);
     const [user, setUser] = useState({});
-    const [selectedLanguage, setSelectedLanguage] = useState("ENGLISH");
 
-    // const pickerRef = useRef();
-    // function open() {
-    //     pickerRef.current.focus();
-    // }
-    // function close() {
-    //     pickerRef.current.blur();
-    // }
+    const [selectedLanguage, setSelectedLanguage] = useState('EN');
+    const [isCheckboxSelected, setCheckboxSelected] = useState(false);
 
-    const [userID, setUserID] = useState("");
-    const [password, setPassword] = useState("");
-    const [code, setCode] = useState("");
-    const [newPassword, setNewPassword] = useState("");
+    const [userID, setUserID] = useState('');
+    const [password, setPassword] = useState('');
+    const [code, setCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     const [showEmailVerifyModal, setShowEmailVerifyModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
 
     // Handle user state changes
-    const onAuthStateChanged = (user) => {
+    const onAuthStateChanged = user => {
         setUser(user);
-        console.log("kaus", user)
+        console.log('kaus onAuthStateChanged', user);
         if (initializing) setInitializing(false);
-    }
+    };
 
     const onLogin = () => {
-        auth().signInWithEmailAndPassword(userID, password).then(() => {
-            console.log('User signed in!');
-        })
+        props.login(user);
+        auth()
+            .signInWithEmailAndPassword(userID, password)
+            .then(() => {
+                props.dispatch({
+                    type: 'LOGIN_SUCCESS',
+                    context: 'LoginScreen',
+                    payload: {
+                        userId: userID,
+                        password: password,
+                    },
+                });
+            })
             .catch(error => {
+                props.dispatch({
+                    type: 'LOGIN_FAILURE',
+                    context: 'LoginScreen',
+                    payload: error,
+                });
                 if (error.code === 'auth/email-already-in-use') {
                     console.log('That email address is already in use!');
                 }
@@ -46,12 +78,11 @@ function LoginScreen({ navigation }) {
                 if (error.code === 'auth/wrong-password') {
                     console.log('That password is Wrong!');
                 }
-                console.error(error);
+                // console.error(error);
             });
-    }
+    };
 
     useEffect(() => {
-        // open();
         const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
         return subscriber; // unsubscribe on unmount
     }, []);
@@ -59,66 +90,92 @@ function LoginScreen({ navigation }) {
     if (initializing) return null;
 
     if (user) {
-        navigation.navigate('MainTab');
+        props.navigation.navigate('MainTab');
         return null;
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: "#fff", elevation: 6 }}>
+        <SafeAreaView style={styles.container}>
             <StatusBar
-                backgroundColor={"#8cd9d1"}
+                backgroundColor={'#8cd9d1'}
                 barStyle={'light-content'}
-                translucent={false} />
-            <View style={{ flexDirection: "row" }}>
-                <Text style={{ textAlign: "left", color: "red", alignSelf: "flex-start" }}>{"Choose Your Language"}</Text>
+                translucent={false}
+            />
+            <KeyboardAwareScrollView
+                contentContainerStyle={{ flex: 1, width: '100%' }}
+                style={{ width: '100%' }}>
                 <Picker
-                    // ref={pickerRef}
-                    style={{backgroundColor:"#000"}}
+                    style={styles.pickerStyle}
                     selectedValue={selectedLanguage}
                     onValueChange={(itemValue, itemIndex) =>
                         setSelectedLanguage(itemValue)
-                    }>
+                    }
+                    mode={'dialog'}>
                     <Picker.Item label="ENGLISH" value="EN" />
                     <Picker.Item label="TELUGU" value="TE" />
-                    <Picker.Item label="THAILAND" value="TH" />
+                    <Picker.Item label="HINDI" value="IN" />
                 </Picker>
-            </View>
-            <View style={{ flex: 1, justifyContent: 'center', alignSelf: 'flex-end', width: "100%" }}>
-                <Text style={{ textAlign: "center" }}>{user ? `Welcome back, ${user}` : "Welcome"}</Text>
+                <View style={styles.contentCont}>
+                    <Text style={{ textAlign: 'center' }}>
+                        {user ? `Welcome back, ${user}` : 'Welcome'}
+                    </Text>
 
-                <Image source={require("../../../assets/images/logo_color.png")} style={{ width: "100%", maxHeight: "30%", alignSelf: "center", marginHorizontal: 60 }} resizeMode={"cover"} />
-                <Text style={{ color: "#000" }}>User Id</Text>
-                <TextInput
-                    placeholder={"Please Enter Username/email"}
-                    style={{ color: "#000", width: "100%", borderBottomColor: "#000", borderBottomWidth: 1 }}
-                    onChangeText={(txt) => setUserID(txt)}
-                />
-                <Text style={{ color: "#000", marginTop: 10 }}>Password</Text>
-                <TextInput
-                    placeholder={"Please Enter Password"}
-                    style={{ color: "#000", width: "100%", borderBottomColor: "#000", borderBottomWidth: 1 }}
-                    onChangeText={(txt) => setPassword(txt)}
-                />
-                <Text
-                    style={{ color: "red", marginVertical: 10 }}
-                    onPress={() => {
-                        setShowEmailVerifyModal(true);
-                    }}>{"Forgot your Password?"}</Text>
-                <TouchableOpacity
-                    onPress={onLogin}
-                    style={{ padding: 15, alignSelf: 'center', marginVertical: 10, backgroundColor: "#add8e6" }}
-                >
-                    <Text>{"Login"}</Text>
-                </TouchableOpacity>
-
-                <View style={{ alignSelf: "flex-start", flexDirection: "row", marginTop: 9 }}>
-                    <Text style={{ color: "#000" }}>{"Register as a new User? "}</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                        <Text style={{ color: "red" }}>{"Sign Up"}</Text>
+                    <Image
+                        source={require('../../../assets/images/logo_color.png')}
+                        style={styles.logoImg}
+                        resizeMode={'cover'}
+                    />
+                    {/* <Text style={{color: '#000'}}>User Id</Text> */}
+                    <TextInput
+                        placeholder={'Please Enter Username/email'}
+                        style={styles.userIdTxt}
+                        onChangeText={txt => setUserID(txt)}
+                    />
+                    {/* <Text style={{color: '#000', marginTop: 20}}>Password</Text> */}
+                    <TextInput
+                        placeholder={'Please Enter Password'}
+                        style={styles.passwordTxt}
+                        onChangeText={txt => setPassword(txt)}
+                    />
+                    <View style={styles.checkboxContainer}>
+                        <CheckBox
+                            value={isCheckboxSelected}
+                            onValueChange={setCheckboxSelected}
+                            style={styles.checkbox}
+                        />
+                        <Text style={styles.label}>Stay Signed In!</Text>
+                    </View>
+                    <TouchableOpacity
+                        onPress={onLogin}
+                        style={{
+                            padding: 15,
+                            alignSelf: 'center',
+                            marginVertical: 10,
+                            backgroundColor: '#add8e6',
+                        }}>
+                        <Text>{'Login'}</Text>
                     </TouchableOpacity>
+
+                    <View
+                        style={{
+                            alignSelf: 'flex-end',
+                            flexDirection: 'row',
+                            marginTop: 9,
+                        }}>
+                        <Text style={{ color: '#000' }}>{'Register as a new User? '}</Text>
+                        <TouchableOpacity
+                            onPress={() => props.navigation.navigate('Register')}>
+                            <Text style={{ color: 'red' }}>{'Sign Up'}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <Text
+                        style={{ alignSelf: 'flex-end', color: 'red', marginVertical: 5 }}
+                        onPress={() => { setShowEmailVerifyModal(true); }}
+                    >
+                        {'Forgot your Password?'}
+                    </Text>
                 </View>
-            </View>
-            {/* <Button
+                {/* <Button
                 title="Login as a Guest"
                 onPress={() => {
                     auth()
@@ -133,43 +190,65 @@ function LoginScreen({ navigation }) {
 
                             console.error(error);
                         });
-                    navigation.navigate('MainTab')
+                    props.navigation.navigate('MainTab')
                 }}
             /> */}
-
+            </KeyboardAwareScrollView>
             <Modal
                 //  animationType="slide"
                 visible={showEmailVerifyModal}
                 onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
+                    Alert.alert('Modal has been closed.');
                     setShowEmailVerifyModal(false);
                 }}
-                style={{ backgroundColor: "rgba(0,0,0,0.7)", margin: 0, alignItems: "center", justifyContent: "center" }}
-            >
-                <View style={{ marginHorizontal: 30, borderRadius: 20, padding: 18, backgroundColor: "rgba(255,255,255,0.7)" }}>
-                    <Text style={{ color: "#000" }}>Email</Text>
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    margin: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}>
+                <View
+                    style={{
+                        marginHorizontal: 30,
+                        borderRadius: 20,
+                        padding: 18,
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                    }}>
+                    <Text style={{ color: '#000' }}>Email</Text>
                     <TextInput
-                        placeholder={"Please Enter your Email"}
-                        style={{ color: "#000", width: "100%", borderBottomColor: "#000", borderBottomWidth: 1 }}
-                        onChangeText={(txt) => setUserID(txt)}
+                        placeholder={'Please Enter your Email'}
+                        style={{
+                            color: '#000',
+                            width: '100%',
+                            borderBottomColor: '#000',
+                            borderBottomWidth: 1,
+                        }}
+                        onChangeText={txt => setUserID(txt)}
                     />
                     <TouchableOpacity
                         onPress={() => {
-                            auth().sendPasswordResetEmail(userID, {
-                                handleCodeInApp: true,
-                                url: "http://www.kaushikpd.com/"
-                            }).then(() => {
-                                setShowEmailVerifyModal(false);
-                                Alert.alert("An email with verification code is sent!");
-                                setShowResetModal(true);
-                            }).catch(error => {
-                                console.error(error);
-                            })
+                            auth()
+                                .sendPasswordResetEmail(userID, {
+                                    handleCodeInApp: true,
+                                    url: 'http://www.kaushikpd.com/',
+                                })
+                                .then(() => {
+                                    setShowEmailVerifyModal(false);
+                                    Alert.alert('An email with verification code is sent!');
+                                    setShowResetModal(true);
+                                })
+                                .catch(error => {
+                                    console.error(error);
+                                });
                             setShowEmailVerifyModal(false);
                         }}
-                        style={{ padding: 15, alignSelf: 'center', marginVertical: 10, backgroundColor: "#add8e6" }}
-                    >
-                        <Text>{"Send"}</Text>
+                        style={{
+                            padding: 15,
+                            alignSelf: 'center',
+                            marginVertical: 10,
+                            backgroundColor: '#add8e6',
+                        }}>
+                        <Text>{'Send'}</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>
@@ -178,40 +257,65 @@ function LoginScreen({ navigation }) {
                 //  animationType="slide"
                 visible={showResetModal}
                 onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
+                    Alert.alert('Modal has been closed.');
                     setShowResetModal(false);
                 }}
-                style={{ backgroundColor: "rgba(0,0,0,0.7)", margin: 0, alignItems: "center", justifyContent: "center" }}
-            >
-                <View style={{ marginHorizontal: 30, borderRadius: 20, padding: 18, backgroundColor: "rgba(255,255,255,0.7)" }}>
-                    <Text style={{ color: "#000" }}>New Password</Text>
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    margin: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}>
+                <View
+                    style={{
+                        marginHorizontal: 30,
+                        borderRadius: 20,
+                        padding: 18,
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                    }}>
+                    <Text style={{ color: '#000' }}>New Password</Text>
                     <TextInput
-                        placeholder={"Enter New Password"}
-                        style={{ color: "#000", width: "100%", borderBottomColor: "#000", borderBottomWidth: 1 }}
-                        onChangeText={(txt) => setNewPassword(txt)}
+                        placeholder={'Enter New Password'}
+                        style={{
+                            color: '#000',
+                            width: '100%',
+                            borderBottomColor: '#000',
+                            borderBottomWidth: 1,
+                        }}
+                        onChangeText={txt => setNewPassword(txt)}
                     />
-                    <Text style={{ color: "#000" }}>Code</Text>
+                    <Text style={{ color: '#000' }}>Code</Text>
                     <TextInput
-                        placeholder={"Enter Verification Code"}
-                        style={{ color: "#000", width: "100%", borderBottomColor: "#000", borderBottomWidth: 1 }}
-                        onChangeText={(txt) => setCode(txt)}
+                        placeholder={'Enter Verification Code'}
+                        style={{
+                            color: '#000',
+                            width: '100%',
+                            borderBottomColor: '#000',
+                            borderBottomWidth: 1,
+                        }}
+                        onChangeText={txt => setCode(txt)}
                     />
                     <TouchableOpacity
                         onPress={() => {
                             auth()
                                 .confirmPasswordReset(code, newPassword)
                                 .then(() => {
-                                    setShowEmailVerifyModal(false)
+                                    setShowEmailVerifyModal(false);
                                     setShowResetModal(false);
-                                    Alert.alert("Pasword Reset successful!");
-                                }).catch(error => {
-                                    console.error(error);
+                                    Alert.alert('Pasword Reset successful!');
                                 })
+                                .catch(error => {
+                                    console.error(error);
+                                });
                             setShowResetModal(false);
                         }}
-                        style={{ padding: 15, alignSelf: 'center', marginVertical: 10, backgroundColor: "#add8e6" }}
-                    >
-                        <Text>{"Reset Password"}</Text>
+                        style={{
+                            padding: 15,
+                            alignSelf: 'center',
+                            marginVertical: 10,
+                            backgroundColor: '#add8e6',
+                        }}>
+                        <Text>{'Reset Password'}</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>
@@ -219,4 +323,79 @@ function LoginScreen({ navigation }) {
     );
 }
 
-export default LoginScreen;
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 30,
+        backgroundColor: '#fff',
+        elevation: 6,
+    },
+    pickerStyle: {
+        height: 50,
+        width: 200,
+        color: '#000',
+        borderColor: '#000',
+        alignSelf: 'flex-end',
+        alignItems: 'center',
+    },
+    contentCont: {
+        flex: 1,
+        justifyContent: 'center',
+        alignSelf: 'flex-end',
+        width: '100%',
+    },
+    logoImg: {
+        width: '100%',
+        maxHeight: '30%',
+        alignSelf: 'center',
+        marginHorizontal: 60,
+    },
+    userIdTxt: {
+        color: '#000',
+        width: '100%',
+        borderBottomColor: '#000',
+        borderBottomWidth: 1,
+    },
+    passwordTxt: {
+        color: '#000',
+        width: '100%',
+        borderBottomColor: '#000',
+        borderBottomWidth: 1,
+        marginTop: 15,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        marginTop: 10,
+    },
+    checkbox: {
+        alignSelf: 'center',
+    },
+    label: {
+        margin: 8,
+    },
+});
+
+LoginScreen.propTypes = {};
+
+LoginScreen.defaultProps = {};
+
+const mapStateToProps = state => ({
+    loginObj: state.auth.loginObj,
+    isLoggedIn: state.auth.isLoggedIn,
+});
+
+const mapDispatchToProps = dispatch => ({
+    dispatch,
+    login: payload => {
+        console.log('dispatching now');
+        dispatch(login(payload));
+    },
+    setLanguage: payload => {
+        console.log('dispatching now');
+        dispatch(setLanguage(payload));
+    },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);
