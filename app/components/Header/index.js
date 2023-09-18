@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   View,
   Text,
-  Button,
+  TouchableOpacity,
   Switch,
   StyleSheet,
   StatusBar,
@@ -11,16 +11,17 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ThemeToggler from '../ThemeToggler';
-import { useTheme } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import {useTheme} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
-import { useDispatch } from 'react-redux';
-import { logout, logoutSuccess, logoutFailure } from './actions';
+import {useDispatch} from 'react-redux';
+import {logout, logoutSuccess, logoutFailure} from './actions';
 
 function Header(props) {
-  const { colors } = useTheme();
+  const {colors} = useTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -31,6 +32,15 @@ function Header(props) {
       .then(() => {
         console.log('User signed out!');
         dispatch(logoutSuccess());
+        async function removeLoginDetails() {
+          try {
+            await AsyncStorage.removeItem('userId');
+            await AsyncStorage.removeItem('password');
+          } catch (e) {
+            console.log(e);
+          }
+        }
+        // removeLoginDetails();
         navigation.navigate('Login');
       })
       .catch(error => {
@@ -48,8 +58,20 @@ function Header(props) {
   return (
     <View style={styles.container}>
       {/* <View style={{flex:1}} /> */}
-      <Button title="Logout" onPress={onLogout} />
-      <Text style={{ color: colors.text }}>{props.screenName}</Text>
+      <TouchableOpacity
+        style={{
+          borderRadius: 32,
+          paddingHorizontal: 20,
+          paddingVertical: 4,
+          backgroundColor: '#add8e6',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+        onPress={onLogout}>
+        <Text style={{color: '#000'}}>{'Logout'}</Text>
+      </TouchableOpacity>
+      <Text style={{color: colors.text}}>{props.screenName}</Text>
       <ThemeToggler />
     </View>
   );

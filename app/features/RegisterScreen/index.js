@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Button, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import PropTypes from 'prop-types';
@@ -18,16 +18,30 @@ function RegisterScreen(props) {
     language: 'EN',
   });
 
+  const [userErr, setUserErr] = useState({
+    firstName: false,
+    lastName: false,
+    userId: false,
+    password: false,
+    country: false,
+    language: false,
+  });
+
+  const phoneRegex = "/^((?!(0))[0-9]{8})$/";
+  const nameRegex = "/^[a-zA-Z]+(([',.-][a-zA-Z])?[a-zA-Z]*)*$/";
+
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={{
-        flex: 1,
+    <KeyboardAvoidingView
+      behavior='padding'
+      enableOnAndroid
+      style={{
+        // flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        padding: 40,
       }}
-      style={{
-        paddingHorizontal: 40,
-      }}>
+    >
+    
       <View
         style={{
           justifyContent: 'center',
@@ -161,11 +175,11 @@ function RegisterScreen(props) {
         <Text>{'Sign Up'}</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={{ margin: 10, textAlign: 'left' }}
+        style={{ margin: 10 }}
         onPress={() => props.navigation.navigate('Login')}>
-        <Text style={{ color: 'red' }}>{'Existing User! Sign In'}</Text>
+        <Text style={{ width: "100%", textAlign: "right", alignSelf: "flex-end", color: 'red' }}>{'Existing User! Sign In'}</Text>
       </TouchableOpacity>
-    </KeyboardAwareScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

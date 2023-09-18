@@ -1,0 +1,137 @@
+1. Go to your android/app folder in terminal and create a debug key:
+keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000
+The default password is android
+
+2. Go to root folder,
+keytool -genkey -v -keystore my-release-key.keystore -alias plantVilaage_app -keyalg RSA -keysize 2048 -validity 10000
+
+Move keystore to /android/app
+
+in gradle-wrapper.properties,
+MYAPP_UPLOAD_STORE_FILE=release.keystore
+MYAPP_UPLOAD_KEY_ALIAS=alias
+MYAPP_UPLOAD_STORE_PASSWORD=Password-Typed-while-creating-keystore 
+MYAPP_UPLOAD_KEY_PASSWORD=Password-Typed-while-creating-keystore
+
+3. Hop on to android/app/gradle.build and add the below code.
+
+....Here some code resides
+
+signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+
+       release {
+            storeFile file('release.keystore')
+            storePassword 'password'
+            keyAlias 'alias'
+            keyPassword 'password'
+        }
+    }
+
+buildTypes {
+        release {
+            ...
+            signingConfig signingConfigs.release
+        }
+    }
+
+....Here some code resides
+
+4. build the signed apk:
+cd android
+gradlew bundleRelease
+
+It will take some time to build and you will get an .aab file in your android/app/build/outputs/bundle/release/app.aab folder.
+Now Google wants .aab file but Amazon and Samsung want an Apk. So to get an Apk simply run the below command to get an apk for testing purposes in the root folder of your app.
+
+npx react-native run-android --variant=release
+
+Now for production ready Apks do as below,
+
+cd android
+gradlew assembleRelease
+
+You will get an Apk in the C:\Users\Gautham\notifier\android\app\build\outputs\apk\release folder.
+
+
+------
+
+STES I FOLLOWED:
+$ keytool -genkey -v -keystore my-release-key.keystore -alias plantVilaage_app -keyalg RSA -keysize 2048 -validity 10000
+Enter keystore password:  android
+Re-enter new password: android
+What is your first and last name?
+  [Unknown]:  Kaushik
+What is the name of your organizational unit?
+  [Unknown]:  PV
+What is the name of your organization?
+  [Unknown]:  PV
+What is the name of your City or Locality?
+  [Unknown]:  Hyderabad
+What is the name of your State or Province?
+  [Unknown]:  Telangana
+What is the two-letter country code for this unit?
+  [Unknown]:  IN
+Is CN=Kaushik, OU=PV, O=PV, L=Hyderabad, ST=Telangana, C=IN correct?
+  [no]:
+What is your first and last name?
+  [Kaushik]:
+What is the name of your organizational unit?
+  [PV]:
+What is the name of your organization?
+  [PV]:
+What is the name of your City or Locality?
+  [Hyderabad]:
+What is the name of your State or Province?
+  [Telangana]:
+What is the two-letter country code for this unit?
+  [IN]:
+Is CN=Kaushik, OU=PV, O=PV, L=Hyderabad, ST=Telangana, C=IN correct?
+  [no]:  yes
+
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
+        for: CN=Kaushik, OU=PV, O=PV, L=Hyderabad, ST=Telangana, C=IN
+[Storing my-release-key.keystore]
+
+
+
+
+SEE https://github.com/zaicevas/chat-demo to implement bckend
+
+npm install -g npm@latest
+npm i -g yarn
+
+npx react-native init plantVillage
+
+yarn add moment prop-types @react-native-firebase/app @react-native-firebase/auth @react-native-picker/picker @react-navigation/bottom-tabs @react-navigation/native @react-navigation/native-stack @react-native-community/checkbox
+
+yarn add @react-native-community/async-storage geolib redux react-redux redux-thunk redux-persist react-native-vector-icons react-native-splash-screen react-native-screens react-native-android-location-enabler react-native-device-info react-native-fs react-native-geolocation-service react-native-image-crop-picker react-native-keyboard-aware-scroll-view react-native-modal react-native-open-settings react-native-permissions react-native-picker-select react-native-safe-area-context
+
+COMPILATION ERRORS:
+For RN>=0.68.0:
+1. For react-native-open-settings, in node_modules/android/build.gradle-->change "compile" to "implementation"
+(or) reduce gradle version in gradle-wrapper.properties
+
+---------------
+RUNTIME ERRORS:
+1. Add react-native-splash-screen manually for android and ios
+
+2. Add react-native-firebase
+To generate a debug signing certificate run: cd android && ./gradlew signingReport
+TODO:
+
+Play Video/Audio and WebView
+
+Stay Signed IN(Async/Persist Storage)
+logIn As Guest
+
+Internationalisation
+
+landscape mode
+
+Refresh Control and Deep-Linking

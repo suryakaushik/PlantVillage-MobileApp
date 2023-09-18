@@ -1,6 +1,0 @@
-Play Video/Audio and WebView
-
-Stay Signed IN(Async/Persist Storage)
-logIn As Guest
-
-Internationalisation

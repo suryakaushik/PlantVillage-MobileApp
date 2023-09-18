@@ -23,7 +23,9 @@ import { fetchPredictions, getPredictions } from './actions';
 
 // import AsyncStorage from '@react-native-community/async-storage';
 
-import OpenSettings from 'react-native-open-settings';
+// import OpenSettings from 'react-native-open-settings';
+
+
 import Modal from 'react-native-modal';
 import ImagePicker from 'react-native-image-crop-picker';
 // import RNFS from 'react-native-fs';
@@ -66,7 +68,7 @@ const PredictionScreen = props => {
       .catch(error => {
         setTimeout(() => {
           if (error.code === 'E_PERMISSION_MISSING') {
-            OpenSettings.openSettings();
+            Linking.openSettings();
           }
         }, 1000);
       });
@@ -83,7 +85,7 @@ const PredictionScreen = props => {
       .catch(error => {
         setTimeout(() => {
           if (error.code === 'E_PERMISSION_MISSING') {
-            OpenSettings.openSettings();
+            Linking.openSettings();
           }
         }, 1000);
       });
